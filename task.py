@@ -73,22 +73,25 @@ class Task():
         return reward
     def reward_distnace_angle(self):
         """Uses average of distance between target and current position and reward_angle"""
-        #ra = self.reward_angle()
-        props = np.array([0.25,0.25,0.25,0.25])#*4#np.random.dirichlet(np.ones(4))
+        props = np.array([0.25,0.25,0.25,0.25])
 
+        ## Calculate angle to target [-180,180]
+        ## rewards approach 1 as the angle is close to 0
         ttv = self.target_pos - self.sim.pose[:3]
         angle = angle_btw(ttv,self.sim.v)
         reward_a = steepen(angle,7)#transform(angle) #+ (angle - self._att)/self._att
 
-
+        ## Calculate distance to target 
+        ## if distance increased since last move, return -1
+        ## else return 1
         dtt = distance(self.target_pos,self.sim.pose[:3])
-        if dtt < 20:
-             reward_d = dtt/20.0
-        else:
-             reward_d = 1 if self._dtt > dtt else  -1
+        reward_d = 1 if self._dtt > dtt else  -1
 
+        ## Pitch and role rewards
         reward_r = steepen(self.sim.pose[3],7)
         reward_p = steepen(self.sim.pose[4],7)
+
+        # average
         return sum(props*np.array([reward_d,reward_a,reward_r,reward_p]))
 
     def get_reward(self):
