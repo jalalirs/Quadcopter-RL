@@ -79,7 +79,7 @@ class Task():
         ## rewards approach 1 as the angle is close to 0
         ttv = self.target_pos - self.sim.pose[:3]
         angle = angle_btw(ttv,self.sim.v)
-        reward_a = steepen(angle,7)#transform(angle) #+ (angle - self._att)/self._att
+        reward_a = steepen(angle,0.5)#transform(angle) #+ (angle - self._att)/self._att
 
         ## Calculate distance to target 
         ## if distance increased since last move, return -1
