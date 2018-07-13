@@ -9,16 +9,12 @@ length = lambda v: math.sqrt(dot(v, v))
 normalize = lambda a: math.atan2(math.sin(a), math.cos(a))
 gaussian = lambda a: np.exp(-a**2)
 steepen = lambda a,degree: (gaussian(normalize(a) * degree) * 2) - 1
-
 dfv = lambda p1, p2, p3: np.linalg.norm(np.cross(p2-p1, p1-p3))/np.linalg.norm(p2-p1)
-
 def points_in_cylinder(pt1, pt2, q,r=4):
     vec = pt2 - pt1
     const = r * np.linalg.norm(vec)
     res = np.where(np.dot(q - pt1, vec) >= 0 and np.dot(q - pt2, vec) <= 0 and np.linalg.norm(np.cross(q - pt1, vec)) <= const)
     return len(res[0])>0
-
-
 #angle_btw = lambda v1,v2: math.acos(dot(v1, v2) / (length(v1) * length(v2)))
 def angle_btw(v1,v2):
     v1u = v1 / np.linalg.norm(v1)
@@ -51,7 +47,7 @@ class Task():
 
         # Simulation
         self.sim = PhysicsSim(init_pose, init_velocities, init_angle_velocities, runtime) 
-        self.action_repeat = 1
+        self.action_repeat = 3
         self.init_pose = init_pose
 
         self.state_size = self.action_repeat * 6
@@ -80,10 +76,6 @@ class Task():
         angle = angle_btw(ttv,self.sim.v)
         diff = (self._att - angle)/self._att
         reward =  np.clip(transform(angle)+diff,-1,1)
-        # if( (1.0 < reward) or (reward < -1.0) ):
-        #     print(reward,self._att,angle)
-        #     print(x, 'is out of scope from -1 to 1')
-        #     assert True
         return reward
     def reward_cylinder(self):
         props = np.array([0.50,0.50])
@@ -161,6 +153,7 @@ class Task():
         if self._dtt < 10:
             done = True
             return next_state, 1000*(1-self.sim.time/self.sim.runtime), True
+        
         return next_state, np.clip(reward,-1,1), done
 
     def reset(self):
