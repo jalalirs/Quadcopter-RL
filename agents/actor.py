@@ -34,6 +34,8 @@ class Actor:
         net = layers.Dense(units=64, activation='relu', kernel_initializer=init.glorot_uniform())(states)
         net = layers.Dense(units=128, activation='relu', kernel_initializer=init.glorot_uniform())(net)
         net = layers.Dense(units=256, activation='relu', kernel_initializer=init.glorot_uniform())(net)
+        net = layers.Dense(units=512, activation='relu', kernel_initializer=init.glorot_uniform())(net)
+        net = layers.Dense(units=256, activation='relu', kernel_initializer=init.glorot_uniform())(net)
         net = layers.Dense(units=128, activation='relu', kernel_initializer=init.glorot_uniform())(net)
         net = layers.Dense(units=64, activation='relu', kernel_initializer=init.glorot_uniform())(net)
         
