@@ -54,6 +54,7 @@ class Task():
         self.action_low = 0
         self.action_high    = 900
         self.action_size = 4
+
         # Goal
         self.target_pos = target_pos if target_pos is not None else np.array([0., 0., 10.]) 
         
@@ -62,8 +63,10 @@ class Task():
         self._rf = RewardFunctions[reward]
         self._att = angle_btw(self.target_pos - self.sim.pose[:3],self.sim.v)
 
+        self._slm = distance(self.target_pos,init_pose[:3])
         self._lv = self.target_pos-init_pose[:3]
-        self._cdi = 10
+        self._cdi = 20
+        self._av = 2
 
     def reward_simple(self):
         """Uses current pose of sim to return reward."""
@@ -80,17 +83,17 @@ class Task():
     def reward_cylinder(self):
         props = np.array([0.50,0.50])
 
-        cyl_r =  np.clip(1-dfv(self.target_pos,self.init_pose[:3],self.sim.pose[:3])/self._cdi,-1,1)
+        if points_in_cylinder(self.target_pos,
+            self.init_pose[:3],self.sim.pose[:3],self._cdi):
+            cyl_r = self._av-dfv(self.target_pos,self.init_pose[:3],self.sim.pose[:3])/self._cdi
+        else:
+            dtt = distance(self.target_pos,self.sim.pose[:3])
+            cyl_r =  max(-self._av,-self._av*dtt/self._slm)
+
 
         ttv = self.target_pos - self.sim.pose[:3]
         angle = angle_btw(ttv,self.sim.v)
-        an_r = steepen(angle,0.5)
-
-        # dtt = distance(self.target_pos,self.sim.pose[:3])
-        # if self._dtt > dtt:
-        #     d_r = 1
-        # else:
-        #     d_r = -1
+        an_r = steepen(angle,0.5)*self._av
 
         reward = sum(props*np.array([cyl_r,an_r]))
 
@@ -154,7 +157,7 @@ class Task():
             done = True
             return next_state, 1000*(1-self.sim.time/self.sim.runtime), True
         
-        return next_state, np.clip(reward,-1,1), done
+        return next_state, reward, done
 
     def reset(self):
         """Reset the sim to start a new episode."""
